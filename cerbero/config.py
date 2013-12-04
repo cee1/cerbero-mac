@@ -25,6 +25,7 @@ from cerbero.errors import FatalError, ConfigurationError
 from cerbero.utils import _, system_info, validate_packager, to_unixpath,\
     shell, parse_file
 from cerbero.utils import messages as m
+import subprocess, pickle, getpass
 
 
 CONFIG_DIR = os.path.expanduser('~/.cerbero')
@@ -143,6 +144,32 @@ class Config (object):
             self._create_path(c.local_sources)
             self._create_path(c.sources)
 
+    def amend_env(self):
+        try:
+            newenv = self.__amend_env_cache
+        except AttributeError:
+            environment = os.path.expanduser('~/%s-scope/environment' % getpass.getuser())
+            p = subprocess.Popen(('bash', '-c', '. %s; python' % environment),
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             env=os.environ)
+
+            sepline = '********** SEPARATE LINE **********'
+            out, ignore = p.communicate("""
+import pickle, os, sys
+
+sys.stdout.write('%s')
+sys.stdout.write(pickle.dumps(os.environ))
+exit()
+""" % sepline)
+
+            out = out.split(sepline, 1)[1]
+            newenv = self.__amend_env_cache = pickle.loads(out)
+
+        for e in self.env.keys():
+            self.env[e] = newenv[e]
+
+        os.environ.update(newenv)
+
     def do_setup_env(self):
         self._restore_environment()
         self._create_path(self.prefix)
@@ -158,6 +185,8 @@ class Config (object):
         # set all the variables
         for e, v in self.env.iteritems():
             os.environ[e] = v
+
+        self.amend_env()
 
     def get_env(self, prefix, libdir, py_prefix):
         # Get paths for environment variables
