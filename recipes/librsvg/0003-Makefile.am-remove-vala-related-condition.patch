@@ -1,0 +1,56 @@
+From 186437823b1caf778970ca49d05a613398ce2495 Mon Sep 17 00:00:00 2001
+From: cee1 <fykcee1@gmail.com>
+Date: Sun, 8 Dec 2013 20:41:17 +0800
+Subject: [PATCH] Makefile.am: remove vala related condition
+
+---
+ Makefile.am  | 18 ------------------
+ configure.in |  3 ---
+ 2 files changed, 21 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index e881100..46dd80b 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -248,24 +248,6 @@ nodist_typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+ 
+ CLEANFILES += $(nodist_gir_DATA) $(nodist_typelibs_DATA)
+ 
+-if ENABLE_VAPIGEN
+-include $(VAPIGEN_MAKEFILE)
+-
+-librsvg-$(RSVG_API_VERSION).vapi: Rsvg-$(RSVG_API_VERSION).gir
+-
+-VAPIGEN_VAPIS = librsvg-$(RSVG_API_VERSION).vapi
+-
+-librsvg_@RSVG_API_VERSION_U@_vapi_DEPS = gio-2.0 cairo
+-librsvg_@RSVG_API_VERSION_U@_vapi_METADATADIRS = $(srcdir)
+-librsvg_@RSVG_API_VERSION_U@_vapi_FILES = Rsvg-$(RSVG_API_VERSION).gir Rsvg-$(RSVG_API_VERSION)-custom.vala
+-
+-vapidir = $(datadir)/vala/vapi
+-vapi_DATA = $(VAPIGEN_VAPIS)
+-
+-CLEANFILES += $(VAPIGEN_VAPIS)
+-
+-endif # ENABLE_VAPIGEN
+-
+ endif # HAVE_INTROSPECTION
+ 
+ # ChangeLog generation
+diff --git a/configure.in b/configure.in
+index 44893b8..e04e618 100644
+--- a/configure.in
++++ b/configure.in
+@@ -265,9 +265,6 @@ fi
+ 
+ GOBJECT_INTROSPECTION_CHECK([0.10.8])
+ 
+-# Vala bindings
+-VAPIGEN_CHECK([0.17.1.26],,,[no])
+-
+ dnl ===========================================================================
+ 
+ m4_copy([AC_DEFUN],[glib_DEFUN])
+-- 
+1.8.3.4 (Apple Git-47)
+

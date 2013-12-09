@@ -2,11 +2,13 @@
 
 class Recipe(recipe.Recipe):
     name = 'clutter-gst'
-    version = '1.6.0'
+    version = '2.0.8'
     # TODO: check license - source files are LGPLv2+ and COPYING is LGPLv2.1
     licenses = [License.LGPLv2_1Plus]
     configure_options = "--disable-introspection "
-    deps = ['clutter', 'gstreamer', 'gst-plugins-base']
+    deps = ['clutter', 'gstreamer-1.0', 'gst-plugins-base-1.0']
+    stype = SourceType.TARBALL
+    url = 'http://ftp.gnome.org/pub/gnome/sources/clutter-gst/2.0/clutter-gst-2.0.8.tar.xz'
     use_system_libs = True
     autoreconf = True
 
@@ -14,3 +16,6 @@ class Recipe(recipe.Recipe):
     files_devel = ['lib/pkgconfig/clutter-gst-1.0.pc', 'include/clutter-1.0/clutter-gst']
     files_plugins_clutter = ['lib/gstreamer-0.10/libgstclutter%(mext)s']
 
+    def prepare(self):
+        if self.config.target_platform in [Platform.DARWIN, Platform.IOS]:
+            self.patches = ['clutter-gst/0001-fix-error-of-undeclared-identifier-GL_MAX_COMBINED_T.patch']

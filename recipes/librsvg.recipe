@@ -3,9 +3,13 @@
 
 class Recipe(recipe.Recipe):
     name = 'librsvg'
-    version = '2.36.1'
+    version = '2.40.1'
+    stype = SourceType.TARBALL
+    url = 'http://ftp.gnome.org/pub/gnome/sources/librsvg/2.40/librsvg-2.40.1.tar.xz'
     licenses = [License.LGPLv2]
-    deps = ['gdk-pixbuf', 'libcroco', 'gtk+']
+    config_sh = 'sh ./autogen.sh'
+    deps = ['gdk-pixbuf', 'libcroco', 'gtk+-3']
+    patches = ['librsvg/0001-Prefer-realpath-over-canonicalize_file_name.patch', 'librsvg/0002-add-autogen.sh.patch', 'librsvg/0003-Makefile.am-remove-vala-related-condition.patch']
     configure_options = '--enable-introspection=no'
 
     files_libs = ['librsvg-2']

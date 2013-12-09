@@ -1,0 +1,25 @@
+From 78dc3605821b7eac0b46f075151df9ce073e2531 Mon Sep 17 00:00:00 2001
+From: cee1 <fykcee1@gmail.com>
+Date: Sun, 8 Dec 2013 22:29:48 +0800
+Subject: [PATCH] fix error of undeclared identifier
+ 'GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS'
+
+---
+ clutter-gst/clutter-gst-video-sink.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/clutter-gst/clutter-gst-video-sink.c b/clutter-gst/clutter-gst-video-sink.c
+index 5b25e78..78f5fed 100644
+--- a/clutter-gst/clutter-gst-video-sink.c
++++ b/clutter-gst/clutter-gst-video-sink.c
+@@ -69,6 +69,7 @@
+ #include <gst/video/gstsurfacemeta.h>
+ #endif
+ 
++#include <OpenGL/gl.h>
+ #include <glib.h>
+ #include <string.h>
+ 
+-- 
+1.8.3.4 (Apple Git-47)
+

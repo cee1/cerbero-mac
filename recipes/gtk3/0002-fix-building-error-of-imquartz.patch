@@ -1,0 +1,24 @@
+From 87126f724a503bec670494547c43cffb30c53d12 Mon Sep 17 00:00:00 2001
+From: cee1 <fykcee1@gmail.com>
+Date: Sun, 8 Dec 2013 00:34:44 +0800
+Subject: [PATCH] fix building error of imquartz
+
+---
+ modules/input/Makefile.am | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/modules/input/Makefile.am b/modules/input/Makefile.am
+index 3ad28d1..45a5d26 100644
+--- a/modules/input/Makefile.am
++++ b/modules/input/Makefile.am
+@@ -155,6 +155,7 @@ im_quartz_la_CPPFLAGS = $(AM_CPPFLAGS) -xobjective-c
+ im_quartz_la_LDFLAGS = -rpath $(moduledir) -avoid-version -module $(no_undefined)
+ im_quartz_la_SOURCES = imquartz.c
+ libstatic_im_quartz_la_SOURCES = $(im_quartz_la_SOURCES)
++libstatic_im_quartz_la_CPPFLAGS = $(im_quartz_la_CPPFLAGS)
+ im_quartz_la_LIBADD = $(LDADDS)
+ if INCLUDE_IM_QUARTZ
+ STATIC_QUARTZ_MODULE = libstatic-im-quartz.la
+-- 
+1.8.3.4 (Apple Git-47)
+

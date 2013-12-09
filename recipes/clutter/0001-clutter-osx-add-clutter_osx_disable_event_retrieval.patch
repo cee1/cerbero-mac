@@ -1,0 +1,79 @@
+From 379ff094f8402200c8a567a8d082382b8c8d3d70 Mon Sep 17 00:00:00 2001
+From: cee1 <fykcee1@gmail.com>
+Date: Wed, 4 Dec 2013 10:43:56 +0800
+Subject: [PATCH] clutter/osx: add clutter_osx_disable_event_retrieval
+
+---
+ clutter/osx/clutter-backend-osx.c | 19 ++++++++++++++++++-
+ clutter/osx/clutter-osx.h         |  4 +++-
+ 2 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/clutter/osx/clutter-backend-osx.c b/clutter/osx/clutter-backend-osx.c
+index 1438a50..90f5e6c 100644
+--- a/clutter/osx/clutter-backend-osx.c
++++ b/clutter/osx/clutter-backend-osx.c
+@@ -42,6 +42,9 @@
+ 
+ G_DEFINE_TYPE (ClutterBackendOSX, clutter_backend_osx, CLUTTER_TYPE_BACKEND)
+ 
++/* various flags corresponding to pre init setup calls */
++static gboolean _no_event_retrieval = FALSE;
++
+ /*************************************************************************/
+ static gboolean
+ clutter_backend_osx_post_parse (ClutterBackend  *backend,
+@@ -73,6 +76,19 @@ clutter_backend_osx_post_parse (ClutterBackend  *backend,
+   return TRUE;
+ }
+ 
++void
++clutter_osx_disable_event_retrieval (void)
++{
++  if (_clutter_context_is_initialized ())
++    {
++      g_warning ("clutter_osx_disable_event_retrieval() can only be "
++                 "called before clutter_init()");
++      return;
++    }
++
++  _no_event_retrieval = TRUE;
++}
++
+ static ClutterFeatureFlags
+ clutter_backend_osx_get_features (ClutterBackend *backend)
+ {
+@@ -95,7 +111,8 @@ _clutter_backend_osx_events_init (ClutterBackend *backend)
+                   "backend", CLUTTER_BACKEND(backend_osx),
+                   NULL);
+ 
+-  _clutter_osx_event_loop_init ();
++  if (!_no_event_retrieval)
++    _clutter_osx_event_loop_init ();
+ }
+ 
+ static gboolean
+diff --git a/clutter/osx/clutter-osx.h b/clutter/osx/clutter-osx.h
+index b8ea628..fb389e0 100644
+--- a/clutter/osx/clutter-osx.h
++++ b/clutter/osx/clutter-osx.h
+@@ -24,7 +24,7 @@
+ 
+ #import <AppKit/AppKit.h>
+ 
+-#include <clutter/clutter-stage.h>
++#include <clutter/clutter.h>
+ 
+ @class NSEvent;
+ 
+@@ -38,6 +38,8 @@ void _clutter_events_osx_uninit (void);
+ 
+ void _clutter_event_osx_put     (NSEvent *nsevent, ClutterStage *wrapper);
+ 
++void clutter_osx_disable_event_retrieval (void);
++
+ G_END_DECLS
+ 
+ #endif /* __CLUTTER_OSX_H__ */
+-- 
+1.8.3.4 (Apple Git-47)
+

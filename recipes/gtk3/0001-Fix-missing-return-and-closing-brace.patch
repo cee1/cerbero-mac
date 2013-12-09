@@ -1,0 +1,26 @@
+From 52d5b2ca53563280ea4e6585ce6407c830b7bb87 Mon Sep 17 00:00:00 2001
+From: William Hua <william@attente.ca>
+Date: Sat, 16 Nov 2013 10:05:04 -0500
+Subject: [PATCH] Fix missing return and closing brace.
+
+---
+ gdk/quartz/gdkevents-quartz.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/gdk/quartz/gdkevents-quartz.c b/gdk/quartz/gdkevents-quartz.c
+index 39a214b..6fddf43 100644
+--- a/gdk/quartz/gdkevents-quartz.c
++++ b/gdk/quartz/gdkevents-quartz.c
+@@ -1680,6 +1680,9 @@ _gdk_quartz_screen_get_setting (GdkScreen   *screen,
+       g_value_set_boolean (value, TRUE);
+ 
+       GDK_QUARTZ_RELEASE_POOL;
++
++      return TRUE;
++    }
+   
+   /* FIXME: Add more settings */
+ 
+-- 
+1.8.3.4 (Apple Git-47)
+

@@ -3,7 +3,9 @@
 
 class Recipe(recipe.Recipe):
     name = 'atk'
-    version = '2.4.0'
+    version = '2.10.0'
+    stype = SourceType.TARBALL
+    url = 'http://ftp.gnome.org/pub/gnome/sources/atk/2.10/atk-2.10.0.tar.xz'
     licenses = [License.LGPLv2Plus]
     deps = ['glib']
     autoreconf = True

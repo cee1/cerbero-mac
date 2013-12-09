@@ -2,14 +2,14 @@
 
 class Recipe(recipe.Recipe):
     name = 'cogl'
-    version = '1.8.2'
+    version = '1.16'
     # TODO: check license - source files are LGPLv2+ and COPYING is LGPLv2.1
     licenses = [License.LGPLv2_1Plus]
-    autoreconf = True
+    config_sh = 'sh ./autogen.sh'
+    commit = 'origin/cogl-1.16'
     configure_options = "--disable-introspection "
     use_system_libs = True
     deps = [ 'pango', 'gdk-pixbuf' ]
-    autoreconf = True
 
     files_libs = ['libcogl', 'libcogl-pango']
     files_devel = [
@@ -19,3 +19,7 @@ class Recipe(recipe.Recipe):
         'include/cogl',
         ]
     files_lang = ['cogl']
+
+    def prepare(self):
+        self.remotes['origin'] = 'git://git.gnome.org/cogl'
+        self.remotes['upstream'] = self.remotes['origin']

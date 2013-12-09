@@ -1,0 +1,129 @@
+# -*- Mode: Python -*- vi:si:et:sw=4:sts=4:ts=4:syntax=python
+
+
+class Recipe(recipe.Recipe):
+    name = 'gtk+-3'
+    version = '3.10.6'
+    # TODO: check license - some source files are LGPLv2, others LGPLv2+,
+    #       others LGPLv2.1+, COPYING is LGPLv2 and the webpage states LGPLv2.1
+    licenses = [License.LGPLv2_1Plus]
+    config_sh = 'sh ./autogen.sh'
+    configure_options = '--with-included-immodules --disable-introspection '
+    deps = ['glib', 'atk', 'pango', 'gdk-pixbuf', 'cairo']
+    stype = SourceType.TARBALL
+    url = 'http://ftp.gnome.org/pub/gnome/sources/gtk+/3.10/gtk+-3.10.6.tar.xz'
+
+    patches = ['gtk3/0001-Fix-missing-return-and-closing-brace.patch', 'gtk3/0002-fix-building-error-of-imquartz.patch']
+    files_libs = ['libgailutil']
+    files_bins = ['gtk-update-icon-cache', 'gtk-query-immodules-3.0']
+    files_devel = [
+        'bin/gtk-demo%(bext)s',
+        'bin/gtk-builder-convert',
+        'lib/gtk-3.0/include',
+        'lib/pkgconfig/gtk+-3.0.pc',
+        'lib/pkgconfig/gdk-3.0.pc',
+        'lib/pkgconfig/gail.pc',
+        'include/gtk-3.0',
+        'include/gail-3.0',
+        'share/gtk-3.0/demo',
+    ]
+    files_modules = ['lib/gtk-3.0/modules/libgail%(mext)s']
+    platform_files_libs = {
+        Platform.WINDOWS: ['libgtk-win32-3.0', 'libgdk-win32-3.0'],
+        Platform.DARWIN: ['libgtk-quartz-3.0', 'libgdk-quartz-3.0'],
+        Platform.LINUX: ['libgtk-x11-3.0', 'libgdk-x11-3.0'],
+        }
+    platform_files_devel = {
+        Platform.WINDOWS: [
+            'lib/pkgconfig/gtk+-win32-3.0.pc', 'lib/pkgconfig/gdk-win32-3.0.pc'],
+        Platform.DARWIN: [
+            'lib/pkgconfig/gtk+-quartz-3.0.pc', 'lib/pkgconfig/gdk-quartz-3.0.pc'],
+        Platform.LINUX: [
+            'lib/pkgconfig/gtk+-x11-3.0.pc', 'lib/pkgconfig/gdk-x11-3.0.pc'],
+        }
+    platform_files_themes = {
+        Platform.LINUX: [
+            'share/themes/Default/gtk-3.0-key/gtkrc'],
+        Platform.WINDOWS: [
+            'share/themes/MS-Windows/gtk-3.0/gtkrc',
+            'lib/gtk-3.0/2.10.0/engines/libwimp.dll',]
+        }
+    platform_files_modules = {
+        Platform.LINUX: [
+            'lib/gtk-3.0/modules/libferret%(mext)s',],
+        Platform.DARWIN: [
+            'lib/gtk-3.0/modules/libferret%(mext)s',],
+        }
+    files_lang = ['gtk30', 'gtk30-properties']
+
+
+    def __init__(self, config):
+        self.tarball_dirname = "gtk+-%(version)s"
+        super(Recipe, self).__init__(config)
+
+    def _set_flags(self, module_path1=None, module_path2=None, theme_path=None):
+        self.append_env['CFLAGS'] = self._gtk_flags(module_path1, module_path2, theme_path)
+
+    def _gtk_flags(self, module_path1=None, module_path2=None, theme_path=None):
+        flags = ''
+        def escape(path):
+            return '\\"%s\\"' % path
+        if module_path1 is not None:
+            flags += ' -DGST_SDK_GTK_DISTRO_GTK_MODULE_PATH=%s' % escape(module_path1)
+        if module_path2 is not None:
+            flags += ' -DGST_SDK_GTK_DISTRO_GTK_MODULE_PATH2=%s' % escape(module_path2)
+        if theme_path is not None:
+            flags += ' -DGST_SDK_GTK_DISTRO_GTK_THEME_PATH=%s' % escape(theme_path)
+        return flags
+
+    def prepare(self):
+        if self.config.target_platform != Platform.LINUX:
+            self.configure_options += '--disable-gtk-doc '
+        if self.config.target_platform == Platform.WINDOWS:
+            self.configure_options += '--disable-papi --disable-cups '
+        elif self.config.target_platform == Platform.DARWIN:
+            self.configure_options += '--disable-x11-backend --enable-quartz-backend '
+        elif self.config.target_platform == Platform.LINUX:
+            # Can't change CFLAGS and use configure cache
+            self.can_use_configure_cache = False
+            mod_path1 = '/usr/lib/gtk-3.0'
+            mod_path2 = None
+            themes_path = '/usr/share/themes'
+            # Old Debian/Ubuntu
+            if self.config.target_distro_version in [DistroVersion.DEBIAN_SQUEEZE,
+                                                     DistroVersion.UBUNTU_LUCID,
+                                                     DistroVersion.UBUNTU_MAVERICK]:
+                pass
+            # Ubuntu
+            elif self.config.target_distro_version in [DistroVersion.UBUNTU_NATTY,
+                                                       DistroVersion.UBUNTU_ONEIRIC,
+                                                       DistroVersion.UBUNTU_PRECISE,
+                                                       DistroVersion.UBUNTU_QUANTAL,
+                                                       DistroVersion.UBUNTU_RARING,
+                                                       DistroVersion.UBUNTU_SAUCY]:
+                if self.config.target_arch == Architecture.X86:
+                    mod_path2 = '/usr/lib/i386-linux-gnu/gtk-3.0'
+                elif self.config.target_arch == Architecture.X86_64:
+                    mod_path2 = '/usr/lib/x86_64-linux-gnu/gtk-3.0'
+            # Debian 
+            elif self.config.target_distro_version in [DistroVersion.DEBIAN_WHEEZY,
+                                                       DistroVersion.DEBIAN_JESSIE]:
+                if self.config.target_arch == Architecture.X86:
+                    mod_path1 = '/usr/lib/i386-linux-gnu/gtk-3.0'
+                elif self.config.target_arch == Architecture.X86_64:
+                    mod_path1 = '/usr/lib/x86_64-linux-gnu/gtk-3.0'
+            # RedHat
+            elif self.config.target_distro_version in [DistroVersion.FEDORA_16,
+                                                       DistroVersion.FEDORA_17,
+                                                       DistroVersion.FEDORA_18,
+                                                       DistroVersion.FEDORA_19,
+                                                       DistroVersion.REDHAT_6,
+                                                      ]:
+                    if self.config.target_arch == Architecture.X86_64:
+                        mod_path1 = '/usr/lib64/gtk-3.0'
+            elif self.config.target_distro == Distro.SUSE:
+                if self.config.target_arch == Architecture.X86_64:
+                    mod_path1 = '/usr/lib64/gtk-3.0'
+            else:
+                raise FatalError(_("Add specific for other Linux distributions here"))
+            self._set_flags(mod_path1, mod_path2, themes_path)

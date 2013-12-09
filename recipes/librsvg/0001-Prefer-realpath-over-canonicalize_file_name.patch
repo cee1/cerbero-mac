@@ -1,0 +1,82 @@
+From 9b1f7a6d785c130290abc921d8b38f87b15edcdf Mon Sep 17 00:00:00 2001
+From: cee1 <fykcee1@gmail.com>
+Date: Tue, 3 Dec 2013 11:11:34 +0800
+Subject: [PATCH] Prefer realpath over canonicalize_file_name
+
+canonicalize_file_name is a GNU extension which isn't availble on other
+platform(e.g. Mac OS X). canonicalize_file_name is equivalent to
+realpath with NULL as the second argument. Though this behavior is not
+standardized in POSIX.1-2001, but standardized in POSIX.1-2008.
+---
+ configure.in | 15 ++++++++++++++-
+ rsvg-base.c  | 14 ++++++++++----
+ 2 files changed, 24 insertions(+), 5 deletions(-)
+
+diff --git a/configure.in b/configure.in
+index b4d5709..6375e38 100644
+--- a/configure.in
++++ b/configure.in
+@@ -113,7 +113,20 @@ PKG_CHECK_MODULES([GMODULE],[gmodule-2.0])
+ 
+ dnl ===========================================================================
+ 
+-AC_CHECK_FUNCS(strtok_r)
++AC_CHECK_FUNCS(strtok_r canonicalize_file_name)
++AC_LANG(C)
++AC_RUN_IFELSE(
++	[AC_LANG_PROGRAM([[#include <stdlib.h>]],
++			 [[char *r = realpath(".", NULL); if (!r) return 1; free(r);]])],
++	[AC_DEFINE(HAVE_REALPATH_POSIX_1_2008, 1,
++		   [Define if the realpath func complies with POSIX.1-2008.])],
++		   [], [])
++AC_PREPROC_IFELSE(
++	[AC_LANG_SOURCE([[#if !defined (HAVE_REALPATH_POSIX_1_2008) && !defined (HAVE_CANONICALIZE_FILE_NAME)
++	#error "realpath(pth, NULL) or canonicalize_file_name is not available"
++	#endif]])],
++	[AC_MSG_RESULT([OK])],
++	[AC_MSG_FAILURE([realpath(pth, NULL) or canonicalize_file_name is not available])])
+ 
+ # ===========================================================================
+ # GTK
+diff --git a/rsvg-base.c b/rsvg-base.c
+index cb9f64a..7e552e4 100644
+--- a/rsvg-base.c
++++ b/rsvg-base.c
+@@ -55,6 +55,14 @@
+ #include "rsvg-paint-server.h"
+ #include "rsvg-xml.h"
+ 
++#if !defined (HAVE_REALPATH_POSIX_1_2008)
++#ifdef HAVE_CANONICALIZE_FILE_NAME
++#define realpath(pth, null) canonicalize_file_name ((pth))
++#else
++#error "realpath(pth, NULL) or canonicalize_file_name is not available"
++#endif
++#endif
++
+ /*
+  * This is configurable at runtime
+  */
+@@ -2190,8 +2198,7 @@ _rsvg_handle_allow_load (RsvgHandle *handle,
+     dir = g_file_get_path (base);
+     g_object_unref (base);
+ 
+-    /* FIXME portability */
+-    cdir = canonicalize_file_name (dir);
++    cdir = realpath (dir, NULL);
+     g_free (dir);
+     if (cdir == NULL)
+         goto deny;
+@@ -2200,8 +2207,7 @@ _rsvg_handle_allow_load (RsvgHandle *handle,
+     if (path == NULL)
+         goto deny;
+ 
+-    /* FIXME portability */
+-    cpath = canonicalize_file_name (path);
++    cpath = realpath (path, NULL);
+     g_free (path);
+ 
+     if (cpath == NULL)
+-- 
+1.8.3.4 (Apple Git-47)
+
