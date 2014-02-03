@@ -62,6 +62,7 @@ class Recipe(recipe.Recipe):
             self.configure_options += ' --with-system-socket=/var/run/dbus/system_bus_socket'
             self.new_env['LIBS'] = '-lrt'
         if self.config.target_platform == Platform.DARWIN:
+            self.configure_options += ' --enable-launchd --with-launchd-agent-dir=%s/Library/LaunchAgents' % os.path.expanduser('~')
             arch = self.config.target_arch
             if arch == Architecture.X86:
                 arch = 'i386'
